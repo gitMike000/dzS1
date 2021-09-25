@@ -48,6 +48,12 @@ struct PhoneNumber {
     int add_number = -1;
 };
 
+bool operator < (const PhoneNumber& n1, const PhoneNumber& n2)
+{
+    return tie(n1.kod_country, n1.kod_city, n1.p_number, n1.add_number) <
+        tie(n2.kod_country, n2.kod_city, n2.p_number, n2.add_number);
+}
+
 ostream& operator << (ostream& out, const PhoneNumber& n)
 {
     out << "+" << n.kod_country;
@@ -62,7 +68,7 @@ class PhoneBook {
     vector<pair<Person,PhoneNumber>> p_book;
   public:
     PhoneBook(ifstream& file) {
-      file.open("/home/mike/git/dzS1/XXX");
+      file.open("/home/mike/qtc/dzS1/XXX");
       if (!file)
       {
          cerr << "\n Error open file";
@@ -107,6 +113,44 @@ class PhoneBook {
 
     friend ostream& operator<<(ostream& out, const PhoneBook& p_book);
 
+    void SortByName() {
+        sort(p_book.begin(), p_book.end(),
+          [](pair<Person,PhoneNumber> name1, pair<Person,PhoneNumber> name2)
+             {
+              return name1.first < name2.first;
+             }
+        );
+    };
+
+    void SortByPhone() {
+        sort(p_book.begin(), p_book.end(),
+          [](pair<Person,PhoneNumber> name1, pair<Person,PhoneNumber> name2)
+             {
+              return name1.second < name2.second;
+             }
+        );
+    };
+
+    pair<string,PhoneNumber> GetPhoneNumber(string find_surname) {
+        int one=0;
+        PhoneNumber n;
+        for (const auto& [Person, PhoneNumber] : p_book) {
+            if (Person.fName == find_surname) {
+                n=PhoneNumber;++one;
+            }
+        }
+        if (one==1) return { "", n };
+        if (one>1) return { "found more than 1", n};
+        return { "not found", n };
+    };
+
+    void ChangePhoneNumber(Person p,PhoneNumber n) {
+        for (auto& [Person, PhoneNumber] : p_book) {
+            if (Person == p) {
+                PhoneNumber=n;
+            }
+        }
+    };
 
 };
 
@@ -119,11 +163,11 @@ ostream& operator<<(ostream& out, const PhoneBook& book)
 }
 
 int main() {
-    ifstream file("XXX"); // путь к файлу PhoneBook.txt
+    ifstream file("/home/mike/qtc/XXX"); // путь к файлу PhoneBook.txt Без Open не работает на gcc
     PhoneBook book(file);
     cout << book;
 
-/*    cout << "------SortByPhone-------" << endl;
+    cout << "------SortByPhone-------" << endl;
     book.SortByPhone();
     cout << book;
 
@@ -132,7 +176,8 @@ int main() {
     cout << book;
 
     cout << "-----GetPhoneNumber-----" << endl;
-    // лямбда функция, которая принимает фамилию и выводит номер телефона этого    	человека, либо строку с ошибкой
+    // лямбда функция, которая принимает фамилию и выводит номер телефона этого
+    //    человека, либо строку с ошибкой
     auto print_phone_number = [&book](const string& surname) {
         cout << surname << "\t";
         auto answer = book.GetPhoneNumber(surname);
@@ -146,10 +191,10 @@ int main() {
     // вызовы лямбды
     print_phone_number("Ivanov");
     print_phone_number("Petrov");
+    print_phone_number("Sokolov");
 
     cout << "----ChangePhoneNumber----" << endl;
-    book.ChangePhoneNumber(Person{ "Kotov", "Vasilii", "Eliseevich" },                	PhoneNumber{7, 123, "15344458", nullopt});
+    book.ChangePhoneNumber(Person{ "Kotov", "Vasilii", "Eliseevich" }, PhoneNumber{7, 123, "15344458"});
     book.ChangePhoneNumber(Person{ "Mironova", "Margarita", "Vladimirovna" }, PhoneNumber{ 16, 465, "9155448", 13 });
     cout << book;
-*/
 }
